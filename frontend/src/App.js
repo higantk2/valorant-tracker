@@ -4,7 +4,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Favorites from "./pages/Favorites";
-import AgentDetail from "./pages/AgentDetail"; // <--- 1. Import the new component
+import AgentDetail from "./pages/AgentDetail";
+import TopAgents from "./pages/TopAgents"; // <-- ADD THIS IMPORT
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -30,12 +31,20 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* 2. Add the new route for agent details */}
         <Route
           path="/agent/:agentUuid"
           element={
             <ProtectedRoute>
               <AgentDetail />
+            </ProtectedRoute>
+          }
+        />
+        {/* ADD NEW ROUTE */}
+        <Route
+          path="/top-agents"
+          element={
+            <ProtectedRoute>
+              <TopAgents />
             </ProtectedRoute>
           }
         />

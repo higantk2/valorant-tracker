@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 
 export default function Home() {
+// ... (existing state and useEffect)
   const [agents, setAgents] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const token = localStorage.getItem("token");
@@ -52,15 +53,13 @@ export default function Home() {
     backgroundColor: "#1a1a1a",
     color: "white",
     transition: "transform 0.2s, box-shadow 0.2s",
-    // Removed cursor: "pointer" here, as the button has its own cursor style
   };
 
   const cardHover = {
     transform: "scale(1.05)",
     boxShadow: "0px 0px 15px #e63946",
   };
-
-  // New style for the clickable content to indicate interactivity
+  
   const linkContentStyle = {
     display: 'block',
     textDecoration: 'none',
@@ -97,6 +96,24 @@ export default function Home() {
           >
             Logout
           </button>
+          
+          {/* NEW BUTTON FOR MOST FAVORITED AGENTS */}
+          <Link to="/top-agents"> 
+            <button
+              style={{
+                backgroundColor: "#06d6a0", 
+                color: "white",
+                border: "none",
+                padding: "8px 12px",
+                borderRadius: "5px",
+                cursor: "pointer",
+                marginLeft: "10px",
+              }}
+            >
+              Most Favorited Agents
+            </button>
+          </Link>
+          
           <Link to="/favorites">
             <button
               style={{
@@ -130,8 +147,11 @@ export default function Home() {
                 Object.assign(e.currentTarget.style, cardStyle)
               }
             >
-              {/* Wrap the clickable part of the card in a Link component */}
-              <Link to={`/agent/${agent.uuid}`} style={linkContentStyle}>
+              <Link 
+                to={`/agent/${agent.uuid}`} 
+                state={{ from: 'home' }} // Ensure the state is passed for correct back button text
+                style={linkContentStyle}
+              >
                 <img
                   src={agent.displayIcon}
                   alt={agent.displayName}
