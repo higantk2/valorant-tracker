@@ -1,11 +1,16 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from django.contrib.auth.models import User
 from rest_framework.serializers import ModelSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework import serializers, status
+from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Favorite  # make sure you have this model
+# from .models import Favorite  # This is not needed, we'll use the favorites app
+
+# NEW: Import from the favorites app to get the count
+from favorites.models import Favorite 
+# NEW: Import the new serializer
+from .serializers import UserSerializer, ChangePasswordSerializer 
 
 # ------------------------------
 # User Serializer
@@ -45,28 +50,36 @@ class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
 # ------------------------------
-# Favorite Serializer
+# NEW: Get User Profile View
 # ------------------------------
-class FavoriteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Favorite
-        fields = ['id', 'user', 'agent_id', 'agent_name']
-        read_only_fields = ['user']
-
-# ------------------------------
-# Favorites API
-# ------------------------------
-class FavoritesListCreate(APIView):
+class ProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        favorites = Favorite.objects.filter(user=request.user)
-        serializer = FavoriteSerializer(favorites, many=True)
-        return Response(serializer.data)
+    def get(self, request, format=None):
+        user = request.user
+        favorites_count = Favorite.objects.filter(user=user).count()
+        data = {
+            'username': user.username,
+            'favorites_count': favorites_count
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
-    def post(self, request):
-        serializer = FavoriteSerializer(data=request.data)
+# ------------------------------
+# NEW: Change Password View
+# ------------------------------
+class ChangePasswordView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response({"detail": "Password updated successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ------------------------------
+# Unused Favorites API (Your app uses favorites.urls for this)
+# ------------------------------
+# class FavoriteSerializer(...)
+# class FavoritesListCreate(...)

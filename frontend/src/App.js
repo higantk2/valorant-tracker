@@ -5,7 +5,8 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Favorites from "./pages/Favorites";
 import AgentDetail from "./pages/AgentDetail";
-import TopAgents from "./pages/TopAgents"; // <-- ADD THIS IMPORT
+import TopAgents from "./pages/TopAgents";
+import Profile from "./pages/Profile"; // <-- ADD THIS IMPORT
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -39,12 +40,20 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* ADD NEW ROUTE */}
         <Route
           path="/top-agents"
           element={
             <ProtectedRoute>
               <TopAgents />
+            </ProtectedRoute>
+          }
+        />
+        {/* ADD NEW PROFILE ROUTE */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />
