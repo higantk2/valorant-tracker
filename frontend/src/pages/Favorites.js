@@ -4,14 +4,34 @@ import { Link } from "react-router-dom";
 
 export default function Favorites() {
   const [favorites, setFavorites] = useState([]);
+  const [allAgents, setAllAgents] = useState([]); // State to hold all agent data
+  const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    axios
-      .get("http://127.0.0.1:8000/api/favorites/", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setFavorites(res.data));
+    const fetchAllData = async () => {
+      try {
+        // 1. Fetch the list of ALL playable agents from the external API
+        const agentsRes = await axios.get("https://valorant-api.com/v1/agents?isPlayableCharacter=true");
+        setAllAgents(agentsRes.data.data);
+
+        // 2. Fetch the user's favorite list from your Django backend
+        const favoritesRes = await axios.get("http://127.0.0.1:8000/api/favorites/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setFavorites(favoritesRes.data);
+        
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // Handle error (e.g., set an error state)
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (token) {
+      fetchAllData();
+    }
   }, [token]);
 
   const handleLogout = () => {
@@ -35,6 +55,14 @@ export default function Favorites() {
     transform: "scale(1.05)",
     boxShadow: "0px 0px 15px #e63946",
   };
+  
+  if (loading) {
+    return (
+      <div style={{ color: "white", padding: "20px" }}>
+        Loading favorites...
+      </div>
+    );
+  }
 
   return (
     <div
@@ -87,16 +115,39 @@ export default function Favorites() {
         {favorites.length === 0 ? (
           <p>No favorites yet!</p>
         ) : (
-          favorites.map((agent) => (
-            <div
-              key={agent.id}
-              style={cardStyle}
-              onMouseEnter={(e) => Object.assign(e.currentTarget.style, cardHover)}
-              onMouseLeave={(e) => Object.assign(e.currentTarget.style, cardStyle)}
-            >
-              <p style={{ fontWeight: "bold" }}>{agent.agent_name}</p>
-            </div>
-          ))
+          favorites.map((favorite) => {
+            // Find the full agent data by matching the UUID
+            const agentData = allAgents.find(
+              (agent) => agent.uuid === favorite.agent_uuid
+            );
+            
+            // Render only if agent data is found
+            if (!agentData) return null;
+
+            return (
+              // Make the entire card link to the detail page
+              <Link 
+                key={favorite.id} 
+                to={`/agent/${favorite.agent_uuid}`} 
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <div
+                  style={cardStyle}
+                  onMouseEnter={(e) => Object.assign(e.currentTarget.style, cardHover)}
+                  onMouseLeave={(e) => Object.assign(e.currentTarget.style, cardStyle)}
+                >
+                  <img
+                    src={agentData.displayIcon} // Display the agent icon
+                    alt={favorite.agent_name}
+                    width="100"
+                    height="100"
+                    style={{ borderRadius: "5px" }}
+                  />
+                  <p style={{ fontWeight: "bold" }}>{favorite.agent_name}</p>
+                </div>
+              </Link>
+            );
+          })
         )}
       </div>
     </div>

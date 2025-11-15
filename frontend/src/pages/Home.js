@@ -52,12 +52,20 @@ export default function Home() {
     backgroundColor: "#1a1a1a",
     color: "white",
     transition: "transform 0.2s, box-shadow 0.2s",
-    cursor: "pointer",
+    // Removed cursor: "pointer" here, as the button has its own cursor style
   };
 
   const cardHover = {
     transform: "scale(1.05)",
     boxShadow: "0px 0px 15px #e63946",
+  };
+
+  // New style for the clickable content to indicate interactivity
+  const linkContentStyle = {
+    display: 'block',
+    textDecoration: 'none',
+    color: 'inherit',
+    cursor: 'pointer',
   };
 
   return (
@@ -122,14 +130,18 @@ export default function Home() {
                 Object.assign(e.currentTarget.style, cardStyle)
               }
             >
-              <img
-                src={agent.displayIcon}
-                alt={agent.displayName}
-                width="100"
-                height="100"
-                style={{ borderRadius: "5px" }}
-              />
-              <p style={{ fontWeight: "bold" }}>{agent.displayName}</p>
+              {/* Wrap the clickable part of the card in a Link component */}
+              <Link to={`/agent/${agent.uuid}`} style={linkContentStyle}>
+                <img
+                  src={agent.displayIcon}
+                  alt={agent.displayName}
+                  width="100"
+                  height="100"
+                  style={{ borderRadius: "5px" }}
+                />
+                <p style={{ fontWeight: "bold" }}>{agent.displayName}</p>
+              </Link>
+
               <button
                 onClick={() => toggleFavorite(agent)}
                 style={{
